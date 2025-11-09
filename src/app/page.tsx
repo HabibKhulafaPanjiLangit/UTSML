@@ -64,7 +64,7 @@ const mlModels = [
   {
     id: 'ai-demo',
     title: 'AI Capabilities',
-    description: 'Eksplorasi kemampuan AI dengan Z-AI SDK integration',
+  description: 'Eksplorasi kemampuan AI tanpa Z-AI SDK',
     icon: Brain,
     color: 'bg-indigo-500',
     features: ['Text Generation', 'Image Generation', 'Web Search', 'Data Analysis'],
@@ -92,7 +92,7 @@ const features = [
   {
     icon: Cpu,
     title: 'AI-Powered',
-    description: 'Diperkuat dengan Z-AI SDK untuk advanced ML capabilities'
+  description: 'AI-powered untuk advanced ML capabilities'
   },
   {
     icon: Zap,
@@ -110,19 +110,12 @@ export default function Home() {
   const [hoveredCard, setHoveredCard] = useState<string | null>(null)
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
+  <div className="min-h-screen bg-linear-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
       {/* Header */}
       <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-lg border-b border-slate-200 dark:border-slate-700 sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <div className="relative w-10 h-10">
-                <img
-                  src="/logo.svg"
-                  alt="Z.ai Logo"
-                  className="w-full h-full object-contain"
-                />
-              </div>
               <div>
                 <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
                   ML Lab
@@ -180,21 +173,22 @@ export default function Home() {
           <h3 className="text-3xl font-bold text-center text-slate-900 dark:text-white mb-12">
             Machine Learning Models
           </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8 justify-center items-stretch">
             {mlModels.map((model) => {
               const Icon = model.icon
               return (
                 <Card 
                   key={model.id}
-                  className={`relative overflow-hidden transition-all duration-300 hover:shadow-2xl hover:scale-105 cursor-pointer border-0 ${
+                  className={`relative flex flex-col justify-between h-full overflow-hidden transition-all duration-300 hover:shadow-2xl hover:scale-105 cursor-pointer border-0 ${
                     model.status === 'ready' ? 'hover:border-blue-500' : 'opacity-75'
                   }`}
+                  style={{ minHeight: 320, maxWidth: 300, margin: '0 auto' }}
                   onMouseEnter={() => setHoveredCard(model.id)}
                   onMouseLeave={() => setHoveredCard(null)}
                 >
                   <div className={`absolute inset-0 ${model.color} opacity-5`}></div>
-                  <CardHeader className="relative z-10">
-                    <div className="flex items-center justify-between mb-4">
+                  <CardHeader className="relative z-10 text-center">
+                    <div className="flex flex-col items-center mb-4 gap-2">
                       <div className={`p-3 rounded-lg ${model.color} text-white`}>
                         <Icon className="w-6 h-6" />
                       </div>
@@ -210,9 +204,9 @@ export default function Home() {
                       {model.description}
                     </CardDescription>
                   </CardHeader>
-                  <CardContent className="relative z-10">
+                  <CardContent className="relative z-10 px-0">
                     <div className="space-y-3">
-                      <div className="flex flex-wrap gap-1">
+                      <div className="flex flex-wrap gap-1 justify-center">
                         {model.features.slice(0, 2).map((feature, idx) => (
                           <Badge key={idx} variant="outline" className="text-xs">
                             {feature}
@@ -240,7 +234,7 @@ export default function Home() {
                     </div>
                   </CardContent>
                   {hoveredCard === model.id && model.status === 'ready' && (
-                    <div className="absolute inset-0 bg-gradient-to-t from-blue-600/10 to-transparent pointer-events-none"></div>
+                    <div className="absolute inset-0 bg-linear-to-t from-blue-600/10 to-transparent pointer-events-none"></div>
                   )}
                 </Card>
               )
@@ -259,7 +253,7 @@ export default function Home() {
               return (
                 <div key={idx} className="text-center group">
                   <div className="flex justify-center mb-4">
-                    <div className="p-4 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 text-white group-hover:scale-110 transition-transform duration-300">
+                    <div className="p-4 rounded-2xl bg-linear-to-br from-blue-500 to-purple-600 text-white group-hover:scale-110 transition-transform duration-300">
                       <Icon className="w-8 h-8" />
                     </div>
                   </div>
@@ -276,7 +270,7 @@ export default function Home() {
         </div>
 
         {/* Stats Section */}
-        <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-3xl p-8 text-white">
+  <div className="bg-linear-to-r from-blue-600 to-purple-600 rounded-3xl p-8 text-white">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 text-center">
             <div>
               <div className="text-4xl font-bold mb-2">10+</div>

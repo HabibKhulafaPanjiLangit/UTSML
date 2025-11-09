@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server'
-import ZAI from 'z-ai-web-dev-sdk'
 
 export async function POST(request: NextRequest) {
   try {
@@ -12,22 +11,19 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const zai = await ZAI.create()
-
     let result
-
     switch (algorithm) {
       case 'linear_regression':
-        result = await performLinearRegression(data, params, zai)
+        result = { message: 'Fitur linear_regression tidak tersedia.' }
         break
       case 'classification':
-        result = await performClassification(data, params, zai)
+        result = { message: 'Fitur classification tidak tersedia.' }
         break
       case 'clustering':
-        result = await performClustering(data, params, zai)
+        result = { message: 'Fitur clustering tidak tersedia.' }
         break
       case 'neural_network':
-        result = await performNeuralNetwork(data, params, zai)
+        result = { message: 'Fitur neural_network tidak tersedia.' }
         break
       default:
         return NextResponse.json(
@@ -35,7 +31,6 @@ export async function POST(request: NextRequest) {
           { status: 400 }
         )
     }
-
     return NextResponse.json(result)
   } catch (error) {
     console.error('ML API Error:', error)
@@ -46,44 +41,8 @@ export async function POST(request: NextRequest) {
   }
 }
 
-async function performLinearRegression(data: any[], params: any, zai: any) {
-  const prompt = `
-    Perform linear regression analysis on this dataset:
-    Data: ${JSON.stringify(data)}
-    Parameters: ${JSON.stringify(params)}
-    
-    Calculate:
-    1. Slope (m) and intercept (b) for y = mx + b
-    2. R-squared value
-    3. Mean squared error
-    4. Predictions for test points
-    5. Confidence intervals
-    
-    Return results in JSON format with detailed calculations.
-  `
-
-  const completion = await zai.chat.completions.create({
-    messages: [
-      {
-        role: 'system',
-        content: 'You are a machine learning expert specializing in linear regression. Provide detailed mathematical analysis and results in JSON format.'
-      },
-      {
-        role: 'user',
-        content: prompt
-      }
-    ]
-  })
-
-  const analysis = completion.choices[0]?.message?.content
-  
-  try {
-    return JSON.parse(analysis || '{}')
-  } catch {
-    // Fallback to manual calculation if AI fails
-    return manualLinearRegression(data)
-  }
-}
+// Fungsi dummy, ZAI dihapus
+// Semua kode prompt/fungsi AI dihapus. Dummy saja.
 
 async function performClassification(data: any[], params: any, zai: any) {
   const prompt = `
@@ -255,10 +214,10 @@ function manualClassification(data: any[], params: any) {
 
 function manualClustering(data: any[], params: any) {
   const k = params.k || 3
-  const clusters = Array.from({ length: k }, (_, i) => ({
+  const clusters: Array<{ id: number; center: { x: number; y: number }; points: any[] }> = Array.from({ length: k }, (_, i) => ({
     id: i,
     center: { x: Math.random() * 100, y: Math.random() * 100 },
-    points: []
+    points: [] as any[]
   }))
 
   data.forEach((point, idx) => {
@@ -291,9 +250,9 @@ function manualNeuralNetwork(data: any[], params: any) {
 }
 
 function generateMockConfusionMatrix(classes: string[]) {
-  const matrix = []
+  const matrix: number[][] = []
   for (let i = 0; i < classes.length; i++) {
-    const row = []
+    const row: number[] = []
     for (let j = 0; j < classes.length; j++) {
       row.push(i === j ? Math.floor(Math.random() * 50) + 10 : Math.floor(Math.random() * 10))
     }

@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import * as XLSX from 'xlsx';
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Progress } from '@/components/ui/progress'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -38,7 +39,6 @@ import {
   Info,
   CheckCircle,
   AlertCircle,
-  Zap,
   TrendingUp
 } from 'lucide-react'
 
@@ -65,6 +65,68 @@ const defaultData = [
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6']
 
 export default function ClassificationPage() {
+  // Fungsi upload file CSV/Excel
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      const dataStr = evt.target?.result;
+      if (!dataStr) return;
+      let rows: any[] = [];
+      if (file.name.endsWith('.csv')) {
+        // Parse CSV
+        const lines = (dataStr as string).split('\n').map(l => l.trim()).filter(Boolean);
+        const header = lines[0].split(',');
+        rows = lines.slice(1).map(line => {
+          const values = line.split(',');
+          const obj: any = {};
+          header.forEach((h, i) => obj[h] = isNaN(Number(values[i])) ? values[i] : Number(values[i]));
+          return obj;
+        });
+      } else {
+        // Parse Excel
+        const workbook = XLSX.read(dataStr, { type: 'binary' });
+        const sheetName = workbook.SheetNames[0];
+        const sheet = workbook.Sheets[sheetName];
+        rows = XLSX.utils.sheet_to_json(sheet);
+      }
+      setData(rows);
+      setResults(null);
+      setPrediction(null);
+    };
+    if (file.name.endsWith('.csv')) {
+      reader.readAsText(file);
+    } else {
+      reader.readAsBinaryString(file);
+    }
+  };
+
+  // Fungsi export data ke Excel
+  const exportToXLSX = () => {
+    const header = Object.keys(data[0] || { feature1: '', feature2: '', feature3: '', feature4: '', label: '' });
+    const rows = data.map((d: any) => header.map(h => d[h]));
+    const ws = XLSX.utils.aoa_to_sheet([header, ...rows]);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Data');
+    XLSX.writeFile(wb, 'data_classification.xlsx');
+  };
+
+  // Fungsi export data ke CSV
+  const exportToCSV = () => {
+    const header = Object.keys(data[0] || { feature1: '', feature2: '', feature3: '', feature4: '', label: '' });
+    const rows = data.map((d: any) => header.map(h => d[h]));
+    const csv = [header, ...rows].map(r => r.join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'data_classification.csv';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
   const [data, setData] = useState(defaultData)
   const [selectedAlgorithm, setSelectedAlgorithm] = useState('logistic_regression')
   const [results, setResults] = useState<any>(null)
@@ -197,6 +259,12 @@ export default function ClassificationPage() {
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
+            <div className="flex gap-2">
+              <div className="text-xs text-slate-600 dark:text-slate-400 mb-2">Upload file data (CSV/Excel) untuk mengolah data manual. Export hasil ke Excel/CSV untuk analisis dan perhitungan di aplikasi lain seperti Microsoft Excel.</div>
+              <input type="file" accept=".csv,.xlsx,.xls" onChange={handleFileUpload} className="border rounded px-2 py-1 text-sm" />
+              <Button onClick={exportToXLSX} variant="outline" size="sm">Export Excel</Button>
+              <Button onClick={exportToCSV} variant="outline" size="sm">Export CSV</Button>
+            </div>
             <div>
               <h1 className="text-4xl font-bold text-slate-900 dark:text-white mb-2">
                 Classification Models
@@ -400,7 +468,7 @@ export default function ClassificationPage() {
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <Zap className="w-5 h-5" />
+                    {/* Ikon Zap dihapus */}
                     Make Prediction
                   </CardTitle>
                   <CardDescription>

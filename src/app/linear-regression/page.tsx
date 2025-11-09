@@ -174,31 +174,44 @@ export default function LinearRegressionPage() {
 		const file = e.target.files?.[0];
 		if (!file) return;
 		const reader = new FileReader();
-		reader.onload = (evt) => {
-			const dataStr = evt.target?.result;
-			if (!dataStr) return;
-			let rows: any[] = [];
-			if (file.name.endsWith('.csv')) {
-				// Parse CSV
-				const lines = (dataStr as string).split('\n').map(l => l.trim()).filter(Boolean);
-				const header = lines[0].split(',');
-				rows = lines.slice(1).map(line => {
-					const values = line.split(',');
-					const obj: any = {};
-					header.forEach((h, i) => obj[h] = isNaN(Number(values[i])) ? values[i] : Number(values[i]));
-					return obj;
-				});
-			} else {
-				// Parse Excel
-				const workbook = XLSX.read(dataStr, { type: 'binary' });
-				const sheetName = workbook.SheetNames[0];
-				const sheet = workbook.Sheets[sheetName];
-				rows = XLSX.utils.sheet_to_json(sheet);
-			}
-			setData(rows);
-			setResults(null);
-			setPrediction(null);
-		};
+			reader.onload = (evt) => {
+				try {
+					const dataStr = evt.target?.result;
+					if (!dataStr) return;
+					let rows: any[] = [];
+					if (file.name.endsWith('.csv')) {
+						// Parse CSV
+						const lines = (dataStr as string).split('\n').map(l => l.trim()).filter(Boolean);
+						if (lines.length > 1001) {
+							setError('File terlalu besar, maksimal 1000 baris data.');
+							return;
+						}
+						const header = lines[0].split(',');
+						rows = lines.slice(1).map(line => {
+							const values = line.split(',');
+							const obj: any = {};
+							header.forEach((h, i) => obj[h] = isNaN(Number(values[i])) ? values[i] : Number(values[i]));
+							return obj;
+						});
+					} else {
+						// Parse Excel
+						const workbook = XLSX.read(dataStr, { type: 'binary' });
+						const sheetName = workbook.SheetNames[0];
+						const sheet = workbook.Sheets[sheetName];
+						rows = XLSX.utils.sheet_to_json(sheet);
+						if (rows.length > 1000) {
+							setError('File terlalu besar, maksimal 1000 baris data.');
+							return;
+						}
+					}
+					setError('');
+					setData(rows);
+					setResults(null);
+					setPrediction(null);
+				} catch (err) {
+					setError('Format file tidak valid atau terjadi error saat parsing.');
+				}
+			};
 		if (file.name.endsWith('.csv')) {
 			reader.readAsText(file);
 		} else {

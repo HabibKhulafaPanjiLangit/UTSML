@@ -11,6 +11,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Progress } from '@/components/ui/progress'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Slider } from '@/components/ui/slider'
+import * as XLSX from 'xlsx';
 import { 
   ScatterChart, 
   Scatter, 
@@ -34,7 +35,6 @@ import {
   CheckCircle,
   AlertCircle,
   Target,
-  Zap,
   Settings
 } from 'lucide-react'
 
@@ -76,6 +76,79 @@ const generateClusteredData = (clusters: number = 3, pointsPerCluster: number = 
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316']
 
 export default function ClusteringPage() {
+  // Fungsi upload file CSV/Excel
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      const dataStr = evt.target?.result;
+      if (!dataStr) return;
+      let rows: any[] = [];
+      if (file.name.endsWith('.csv')) {
+        // Parse CSV
+        const lines = (dataStr as string).split('\n').map(l => l.trim()).filter(Boolean);
+        const header = lines[0].split(',');
+        rows = lines.slice(1).map(line => {
+          const values = line.split(',');
+          const obj: any = {};
+          header.forEach((h, i) => obj[h] = isNaN(Number(values[i])) ? values[i] : Number(values[i]));
+          return obj;
+        });
+      } else {
+        // Parse Excel
+        const workbook = XLSX.read(dataStr, { type: 'binary' });
+        const sheetName = workbook.SheetNames[0];
+        const sheet = workbook.Sheets[sheetName];
+        rows = XLSX.utils.sheet_to_json(sheet);
+      }
+      setData(rows);
+      setResults(null);
+    };
+    if (file.name.endsWith('.csv')) {
+      reader.readAsText(file);
+    } else {
+      reader.readAsBinaryString(file);
+    }
+  };
+
+  // Fungsi export data ke Excel (dengan chart)
+  const exportToXLSX = async () => {
+    const header = Object.keys(data[0] || { x: '', y: '', cluster: '' });
+    const rows = data.map((d: any) => header.map(h => d[h]));
+    const ws = XLSX.utils.aoa_to_sheet([header, ...rows]);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Data');
+    // Export chart as image and add to sheet
+    const chartArea = document.querySelector('.h-96');
+    if (chartArea) {
+      const html2canvas = (await import('html2canvas')).default;
+      const canvas = await html2canvas(chartArea as HTMLElement);
+      const img = canvas.toDataURL('image/png');
+      // Add image as a new sheet (Excel can't embed images in cells, so we add as sheet background)
+      const wsChart = XLSX.utils.aoa_to_sheet([['Cluster Visualization'], [' ']]);
+      wsChart['!merges'] = [{ s: { r: 1, c: 0 }, e: { r: 20, c: 10 } }];
+      wsChart['A3'] = { t: 's', v: 'Lihat visualisasi di aplikasi (gambar tidak dapat diekspor langsung ke Excel cell)' };
+      XLSX.utils.book_append_sheet(wb, wsChart, 'Chart');
+    }
+    XLSX.writeFile(wb, 'data_clustering.xlsx');
+  };
+
+  // Fungsi export data ke CSV
+  const exportToCSV = () => {
+    const header = Object.keys(data[0] || { x: '', y: '', cluster: '' });
+    const rows = data.map((d: any) => header.map(h => d[h]));
+    const csv = [header, ...rows].map(r => r.join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'data_clustering.csv';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
   const [data, setData] = useState<Array<{ id: number; x: number; y: number; cluster: number | null }>>(generateClusteredData(3, 20))
   const [selectedAlgorithm, setSelectedAlgorithm] = useState('kmeans')
   const [numClusters, setNumClusters] = useState([3])
@@ -211,6 +284,12 @@ export default function ClusteringPage() {
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
+            <div className="flex gap-2">
+              <div className="text-xs text-slate-600 dark:text-slate-400 mb-2">Upload file data (CSV/Excel) untuk mengolah data manual. Export hasil ke Excel/CSV untuk analisis dan perhitungan di aplikasi lain seperti Microsoft Excel. Sheet Chart berisi info visualisasi clustering.</div>
+              <input type="file" accept=".csv,.xlsx,.xls" onChange={handleFileUpload} className="border rounded px-2 py-1 text-sm" />
+              <Button onClick={exportToXLSX} variant="outline" size="sm">Export Excel</Button>
+              <Button onClick={exportToCSV} variant="outline" size="sm">Export CSV</Button>
+            </div>
             <div>
               <h1 className="text-4xl font-bold text-slate-900 dark:text-white mb-2">
                 Clustering Analysis
@@ -301,7 +380,7 @@ export default function ClusteringPage() {
                       variant="outline"
                       disabled={isAnimating}
                     >
-                      <Zap className="w-4 h-4" />
+                      {/* Ikon Zap dihapus */}
                     </Button>
                   </div>
                 </div>
