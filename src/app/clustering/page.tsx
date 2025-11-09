@@ -54,7 +54,7 @@ const generateRandomData = (points: number = 100) => {
 }
 
 const generateClusteredData = (clusters: number = 3, pointsPerCluster: number = 20) => {
-  const data = []
+  const data: Array<{ id: number; x: number; y: number; cluster: number }> = []
   const centers = Array.from({ length: clusters }, () => ({
     x: Math.random() * 80 + 10,
     y: Math.random() * 80 + 10
@@ -76,7 +76,7 @@ const generateClusteredData = (clusters: number = 3, pointsPerCluster: number = 
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316']
 
 export default function ClusteringPage() {
-  const [data, setData] = useState(generateClusteredData(3, 20))
+  const [data, setData] = useState<Array<{ id: number; x: number; y: number; cluster: number | null }>>(generateClusteredData(3, 20))
   const [selectedAlgorithm, setSelectedAlgorithm] = useState('kmeans')
   const [numClusters, setNumClusters] = useState([3])
   const [results, setResults] = useState<any>(null)
@@ -206,8 +206,8 @@ export default function ClusteringPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-100 dark:from-slate-900 dark:to-slate-800 p-6">
-      <div className="container mx-auto max-w-7xl">
+  <div className="min-h-screen bg-linear-to-br from-purple-50 to-pink-100 dark:from-slate-900 dark:to-slate-800 p-6">
+  <div className="container mx-auto max-w-7xl bg-linear-to-br">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">

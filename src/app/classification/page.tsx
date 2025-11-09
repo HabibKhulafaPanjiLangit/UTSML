@@ -39,8 +39,7 @@ import {
   CheckCircle,
   AlertCircle,
   Zap,
-  TrendingUp,
-  Accuracy
+  TrendingUp
 } from 'lucide-react'
 
 const algorithms = [
@@ -193,8 +192,8 @@ export default function ClassificationPage() {
     })) : []
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 dark:from-slate-900 dark:to-slate-800 p-6">
-      <div className="container mx-auto max-w-7xl">
+  <div className="min-h-screen bg-linear-to-br from-green-50 to-emerald-100 dark:from-slate-900 dark:to-slate-800 p-6">
+  <div className="container mx-auto max-w-7xl bg-linear-to-br">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
@@ -283,7 +282,7 @@ export default function ClassificationPage() {
                   <Card>
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
-                        <Accuracy className="w-5 h-5" />
+                        <TrendingUp className="w-5 h-5" />
                         Performance Metrics
                       </CardTitle>
                     </CardHeader>
